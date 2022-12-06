@@ -159,16 +159,39 @@ contract('TestERC721Mintable', accounts => {
     });
 
     describe('have ownership properties', function () {
-        beforeEach(async function () { 
-            this.contract = await ERC721MintableComplete.new({from: account_one});
+        before(async function () { 
+            // this.contract = await ERC721MintableComplete.new({from: account_one});
         })
 
         it('should fail when minting when address is not contract owner', async function () { 
-            
+            try {
+                await contract.mint(account_three, 5, {from: account_two})
+                assert.equal(true, false, "Shall not let mint an adress that is not the contract owner")
+            } catch (error) {
+                assert.equal(true, true)
+            }
         })
 
         it('should return contract owner', async function () { 
-            
+            let owner = await contract.getOwner()
+            assert.equal(owner, account_one, "contract owner is not correct")
+        })
+
+        it('can transfer contract ownership', async function () { 
+            await contract.transferOwnership(account_two, {from: account_one})
+            let owner = await contract.getOwner()
+            assert.equal(owner, account_two, "transfer of ownership failed")
+        })
+
+        it('only owner can transfer contract', async function () { 
+            try {
+                await contract.transferOwnership(account_three, {from: account_one})
+                assert.equal(true, false, "could be transferred by a no-owner")
+            } catch (error) {
+                assert.equal(true, true)
+            }
+            let owner = await contract.getOwner()
+            assert.equal(owner, account_two, "transfer of ownership failed")
         })
 
     });
